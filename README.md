@@ -1,4 +1,9 @@
 # CoDefense
+## Overview
+--- ---
+<img src="./figs/overview.png" alt="drawing" width="1000">
+
+--- --- ---
 
 ## Attack Approach
 

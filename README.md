@@ -5,7 +5,7 @@
 
 --- --- ---
 
-## Attack Approach
+## Adv-Attack Techniques
 
 - [ALERT](https://github.com/soarsmu/attack-pretrain-models-of-code/)
 - [WIR-Random](https://github.com/ZZR0/ISSTA22-CodeStudy)
@@ -14,13 +14,13 @@
 ## Experiments
 
 
-### Creating Environment
+### Create Environment
 
 ```
 pip install -r requirements.txt
 ```
 
-### Training Model
+### Train Original Models
 
 Use `train.py` to train models.
 
@@ -50,7 +50,7 @@ os.system("python run.py \
 ```
 And the model will be saved in `../saved_models`.
 
-### Running Attacks
+### Run Adv-Attack Techniques
 
 In our study, we employed three datasets: BigCloneBench for clone detection, OWASP for vulnerability detection, and CodeSearchNet for code summarization.
 
@@ -90,7 +90,7 @@ Run experiments on other tasks of other models as well.
 
 `./CodeBERT/` contains code for the CodeBERT experiment and `./CodeGPT` contains code for CodeGPT experiment and  `./PLBART ` contains code for PLBART experiment.
 
-### Adv-Retraining Model
+### Adv-Retrain Models
 
 In our study, we created a new training set `adv_train` and new test sets `adv_test1` and `adv_test2`, and divided the original test set equally into `test1` and `test2`.
 You should download the Dataset from [Zenodo](https://zenodo.org/records/12583567) and place the file in the appropriate path. In Zenodo the Dataset is placed in the directory that corresponds to the code.
@@ -123,7 +123,7 @@ os.system("python run.py \
 
 And the retrained model will be saved in `../saved_models_codebert_clone_wir`.
 
-### Testing Adv-Retrained Model
+### Test Adv-Retrained Models
 
 Take `CodeBERT/Clone-detection/code/test.py` for `wir` as an example:
 
@@ -157,7 +157,7 @@ The result will be saved in `../saved_models_codebert_clone_wir/prediction.txt`.
 If you want to perform cross-validation, just change `saved_models_codebert_clone_wir` to `saved_models_codebert_clone_alert` or `saved_models_codebert_clone_style`, 
 and the same goes for `alert` and `style`.
 
-### Defense
+### Model Defense with CoDefense
 E.g., run the following commands to normalize the code:
 ```
 cd Defense/;
@@ -170,6 +170,7 @@ Use `train.py` to train new models.
 
 Take `CodeBERT/Clone-detection/code/train.py` as an example:
 
+In training phase, we should first retrain models based on normalized training data.
 ```
 import os
 
@@ -194,6 +195,30 @@ os.system("python run.py \
 ```
 
 And the new model will be saved in `../saved_defense_models_codebert_clone_wir`.
+
+In inference phase, we should load the new models to predict normalized code input.
+```
+import os
+
+os.system("python run.py \
+    --output_dir=../saved_defense_models_codebert_clone_wir/ \
+    --model_type=roberta \
+    --config_name=microsoft/codebert-base \
+    --model_name_or_path=microsoft/codebert-base \
+    --tokenizer_name=microsoft/codebert-base \
+    --do_test \
+    --train_data_file=../../../defense_Data/Clone-detection/defense_train.txt \
+    --eval_data_file=../../../defense_Data/Clone-detection/defense_valid.txt \
+    --test_data_file=../../../defense_Data/Clone-detection/defense_test2.txt \
+    --epoch 2 \
+    --block_size 400 \
+    --train_batch_size 16 \
+    --eval_batch_size 32 \
+    --learning_rate 5e-5 \
+    --max_grad_norm 1.0 \
+    --evaluate_during_training \
+    --seed 123456 2>&1")
+```
 
 
 ## Datasets and Results
